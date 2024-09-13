@@ -1,0 +1,15 @@
+Sistema de arranque básico: 
+	
+	1.- Ejecutar main_server.py host (main server) ==> inicializa server principal
+	2.- Ejecutar main_server.py raspberry pi (planta) ==> inicializa servidor planta 
+	3.- Ejecutar main_client.py raspberry pi (planta)
+		==> lee inputs u[1:2]
+		==> ejecuta step() para planta 
+		==> escribe x[1:4] al servidor opc de la planta
+	4.- Eejcutar main_client.py jetsons (AE+Controller)
+		==> lee planta outputs: x[1:4]
+		==> ejecuta filtro+controlador loop 
+		==> escribe u[1:2] al servidor opc de la planta 
+	5.- Ejecutar main_client.py host (main server)
+	
+	
