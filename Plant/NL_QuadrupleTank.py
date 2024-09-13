@@ -1,10 +1,6 @@
 import numpy as np
-from scipy.integrate import solve_ivp
-import matplotlib.pyplot as plt
-import time, os, torch
+from scipy.integrate import solve_ivp, odeint
 import numpy as np
-from scipy.integrate import odeint
-import datetime
 
 class NL_QuadrupleTank():
     def __init__(self, x0, Ts=0.1):
