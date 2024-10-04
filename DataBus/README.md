@@ -1,4 +1,4 @@
-# Redis Pub/Sub Data Bus with Autoencoder Driver
+# Redis Pub/Sub Data Bus 
 
 This project demonstrates a Redis-based publish-subscribe data bus system in real-time. The system involves three main components:
 1. **Client**: Publishes raw process data to a Redis channel (`plant_outputs`).
