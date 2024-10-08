@@ -21,7 +21,7 @@ pip install redis numpy
 To run the project: 
 
 1. **Run docker desktop**
-2. **Run the following commands**
+2. **Run the following commands:**
 
 ```bash
 docker-compose up
