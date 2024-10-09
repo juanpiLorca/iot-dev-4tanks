@@ -18,7 +18,7 @@ You can install the Redis client using pip:
 pip install redis numpy
 ```
 
-To run the project: 
+To run the project (Windows): 
 
 1. **Run docker desktop**
 2. **Run the following commands:**
