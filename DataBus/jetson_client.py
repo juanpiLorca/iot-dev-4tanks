@@ -105,6 +105,7 @@ if __name__ == "__main__":
             data = [elapsed_time, dt, y[0], y[1], y[2], y[3], u[0], u[1]]
             write_data_file(data, csv_path, fieldnames)
     finally: 
+        d_redis.stop_subscribing()
         plant_timer.stop()
 
 

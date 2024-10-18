@@ -1,0 +1,39 @@
+version: '3.8'  
+
+services:
+
+  opc_server: 
+    image: plant_opcua_server
+    build: 
+      context: ./src/opc_server
+      dockerfile: Dockerfile 
+    container_name: plant-opc-server
+    environment: 
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/opc_server:/workspace_sv
+    network_mode: host
+    restart: unless-stopped
+    env_file: 
+      - .env
+
+  4-tanks:
+    image: plant_4tanks
+    build:
+      context: ./src/plant  
+      dockerfile: Dockerfile         
+    container_name: plant-4tanks
+    environment: 
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/plant:/workspace_pl
+    network_mode: host
+    env_file: 
+      - .env
+    depends_on:
+      - opc_server
+    command: |
+      /bin/bash -c "
+        sleep 10 && python3 main.py
+      "
+

@@ -48,29 +48,32 @@ if __name__ == "__main__":
     ## Start the subscription (receiving data from plant_outputs)
     d_redis.start_subscribing(channel_sub)
 
-    t_delay = 0.1                   # to simulate autoencoder processing time [s]
-    yf = np.zeros(shape=(4,))
-    start_time = time.time()
-    while True:
-        current_time = time.time()
-        # Get the latest data from the subscribed channel
-        y = d_redis.data_subs
+    try: 
+        t_delay = 0.1                   # to simulate autoencoder processing time [s]
+        yf = np.zeros(shape=(4,))
+        start_time = time.time()
+        while True:
+            current_time = time.time()
+            # Get the latest data from the subscribed channel
+            y = d_redis.data_subs
 
-        # Check if data is valid before processing
-        if y is not None and y.size > 0:
-            # Process the data:
-            yf = process_data(y, t_delay)
-            ## Publishing
-            d_redis.publish_data(channel_pub, yf)
-            print('Published (Redis) to plant_outputs_filtered:')
-            print('(y_1, y_2, y_3, y_4) = ({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(yf[0], yf[1], yf[2], yf[3]))
-            print(30*'-')
+            # Check if data is valid before processing
+            if y is not None and y.size > 0:
+                # Process the data:
+                yf = process_data(y, t_delay)
+                ## Publishing
+                d_redis.publish_data(channel_pub, yf)
+                print('Published (Redis) to plant_outputs_filtered:')
+                print('(y_1, y_2, y_3, y_4) = ({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(yf[0], yf[1], yf[2], yf[3]))
+                print(30*'-')
 
-        ## Event handling!
-        d_redis.wait_for_new_data()
+            ## Event handling!
+            d_redis.wait_for_new_data()
 
-        elapsed_time = current_time - start_time
-        dt = time.time() - current_time
-        ## Store simulation time, delta time, and variables in data array
-        data = [elapsed_time, dt, yf[0], yf[1], yf[2], yf[3]]
-        write_data_file(data, csv_path, fieldnames)
+            elapsed_time = current_time - start_time
+            dt = time.time() - current_time
+            ## Store simulation time, delta time, and variables in data array
+            data = [elapsed_time, dt, yf[0], yf[1], yf[2], yf[3]]
+            write_data_file(data, csv_path, fieldnames)
+    finally: 
+        d_redis.stop_subscribing()

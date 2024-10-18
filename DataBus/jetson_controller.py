@@ -61,7 +61,7 @@ if __name__ == "__main__":
     controller = Controller(Ts_PLANT)
 
     csv_path = "results/controller.csv"
-    fieldnames = ["t", "dt", "u1", "u2", "u3", "u4"]
+    fieldnames = ["t", "dt", "u1", "u2"]
     with open(csv_path, "w") as file: 
         csv_writer = csv.DictWriter(file, fieldnames=fieldnames)
         csv_writer.writeheader()
@@ -79,46 +79,51 @@ if __name__ == "__main__":
     ## Start the subscription (receiving data from plant_outputs_filtered)
     d_redis.start_subscribing(channel_sub)
 
-    cnt = 0
-    sim_points = 20000
-    ref = 15 * np.ones(4)               # init reference 4-Tanks plant
-    u = np.zeros(shape=(2,))
-    start_time = time.time()
-    while True:
-        current_time = time.time()
-        # Get the latest data from the subscribed channel
-        yf = d_redis.data_subs
+    try: 
+        cnt = 0
+        sim_points = 20000
+        ref = 15 * np.ones(4)               # init reference 4-Tanks plant
+        u = np.zeros(shape=(2,))
+        start_time = time.time()
+        while True:
+            current_time = time.time()
+            # Get the latest data from the subscribed channel
+            yf = d_redis.data_subs
 
-        # Check if data is valid before processing
-        if yf is not None and yf.size > 0:
-            # Process the data:
-            controller.integral_control(yf, ref)
-            u = np.array([controller.u[0], controller.u[1]])
-            # Publishing:
-            d_redis.publish_data(channel_pub, u)
-            print('Published (Redis) to plant_inputs:')
-            print('(u_1, u_2) = ({:.2f}, {:.2f})'.format(u[0], u[1]))
-            print(30*'-')
-            ## Reference changes in 1/3 and 2/3 of the simulation length
-            if cnt == int(sim_points/10): ref = 20 * np.ones(4)
-            if cnt == int(2*sim_points/10): ref = 25 * np.ones(4)
-            if cnt == int(3*sim_points/10): ref = 5 * np.ones(4)
-            if cnt == int(4*sim_points/10): ref = 10 * np.ones(4)
-            if cnt == int(5*sim_points/10): ref = 20 * np.ones(4)
-            if cnt == int(6*sim_points/10): ref = 35 * np.ones(4)
-            if cnt == int(7*sim_points/10): ref = 25 * np.ones(4)
-            if cnt == int(8*sim_points/10): ref = 15 * np.ones(4)
-            if cnt == int(9*sim_points/10): ref = 30 * np.ones(4)
-            if cnt >= sim_points:
-                cnt = 0
-            else:
-                cnt += 1
+            # Check if data is valid before processing
+            if yf is not None and yf.size > 0:
+                # Process the data:
+                controller.integral_control(yf, ref)
+                u = np.array([controller.u[0], controller.u[1]])
+                # Publishing:
+                d_redis.publish_data(channel_pub, u)
+                print('Published (Redis) to plant_inputs:')
+                print('(u_1, u_2) = ({:.2f}, {:.2f})'.format(u[0], u[1]))
+                print('Tracking sample cnt number: {}'.format(cnt))
+                print('Reference: ({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(ref[0], ref[1], ref[2], ref[3]))
+                print(30*'-')
+                ## Reference changes in 1/3 and 2/3 of the simulation length
+                if cnt == int(sim_points/10): ref = 20 * np.ones(4)
+                if cnt == int(2*sim_points/10): ref = 25 * np.ones(4)
+                if cnt == int(3*sim_points/10): ref = 5 * np.ones(4)
+                if cnt == int(4*sim_points/10): ref = 10 * np.ones(4)
+                if cnt == int(5*sim_points/10): ref = 20 * np.ones(4)
+                if cnt == int(6*sim_points/10): ref = 35 * np.ones(4)
+                if cnt == int(7*sim_points/10): ref = 25 * np.ones(4)
+                if cnt == int(8*sim_points/10): ref = 15 * np.ones(4)
+                if cnt == int(9*sim_points/10): ref = 30 * np.ones(4)
+                if cnt >= sim_points:
+                    cnt = 0
+                else:
+                    cnt += 1
 
-        ## Event handling!
-        d_redis.wait_for_new_data()
+            ## Event handling!
+            d_redis.wait_for_new_data()
 
-        elpased_time = current_time - start_time
-        dt = time.time() - current_time
-        ## Store simulation time, delta time, and variables in data array
-        data = [elpased_time, dt, u[0], u[1]]
-        write_data_file(data, csv_path, fieldnames)
+            elpased_time = current_time - start_time
+            dt = time.time() - current_time
+            ## Store simulation time, delta time, and variables in data array
+            data = [elpased_time, dt, u[0], u[1]]
+            write_data_file(data, csv_path, fieldnames)
+    finally: 
+        d_redis.stop_subscribing()

@@ -1,5 +1,6 @@
 import numpy as np
-from NL_QuadrupleTank import NL_QuadrupleTank
+from params import *
+from src.plant.NL_QuadrupleTank import NL_QuadrupleTank
 from scipy.integrate import odeint
 
 class new_NL_QuadrupleTank():

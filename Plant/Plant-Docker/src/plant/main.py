@@ -1,9 +1,12 @@
 from opcua import Client
-import time
+import time, sys, os
 import numpy as np
 from NL_QuadrupleTank import NL_QuadrupleTank
+from util import UtilTimer
+## Import from parent directory
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(parent_dir)
 from params import *
-from util import *
 
 if __name__ == '__main__':
     ## Instanciate Plant
@@ -33,17 +36,17 @@ if __name__ == '__main__':
     ## Plant sample time: 
     plant_timer = UtilTimer(Ts_PLANT, "Sampling Plant Timer")
     plant_timer.start()
-    
-    try:      
+
+    try: 
         while True:
             plant_timer.wait()
-
+            
             ## Get the values from the controller and update the plant
-            u = np.array([u_1_node.get_value(), u_2_node.get_value()])
             ## Plant step
+            u = np.array([u_1_node.get_value(), u_2_node.get_value()])
             plant.step(u)
 
-            ## Read the server variables
+            ## Update server variables
             y_1_node.set_value(plant.x[0])
             y_2_node.set_value(plant.x[1])
             y_3_node.set_value(plant.x[2])

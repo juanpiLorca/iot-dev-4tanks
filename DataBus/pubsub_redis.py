@@ -14,11 +14,15 @@ class PubRedis:
             decode_responses=True,
             db=0
         )
+        self.publisher_thread  = None
         self.publish_queue = queue.Queue()
         self.new_data_event = threading.Event()
+        self.force_shutdown = True
 
     def publish_thread(self, channel):
         while True:
+            if self.force_shutdown: 
+                break
             # Wait for the new data event to be set
             self.new_data_event.wait()
             if not self.publish_queue.empty():
@@ -38,6 +42,10 @@ class PubRedis:
         # Signal that new data is ready to be published
         self.new_data_event.set() 
 
+    def stop_publishing(self): 
+        self.force_shutdown = True
+        self.publisher_thread.join()
+
 
 class SubRedis:
     def __init__(self, host, port, driver_name):
@@ -49,6 +57,8 @@ class SubRedis:
             decode_responses=True,
             db=0
         )
+        self.subscriber_thread = None
+        self.force_shutdown = True
 
     def subscribe_thread(self, channel):
         pubsub = self.r_client.pubsub()
@@ -56,6 +66,9 @@ class SubRedis:
         print(f"Subscribed to channel {channel}")
 
         for msg in pubsub.listen():
+            if self.force_shutdown: 
+                break
+
             if msg['type'] == 'message':
                 self.data_subs = np.array(json.loads(msg["data"]))
                 print(f"Received data: {self.data_subs}")
@@ -67,6 +80,10 @@ class SubRedis:
             target=self.subscribe_thread, args=(channel,)
         )
         self.subscriber_thread.start() 
+    
+    def stop_subscribing(self): 
+        self.force_shutdown = True
+        self.subscriber_thread.join()
 
 
 # Redis client
@@ -84,6 +101,7 @@ class PubSubRedis:
         self.data_subs = None
         self.publish_queue = queue.Queue()
         self.new_data_event = threading.Event()
+        self.force_shutdown = False
 
     def subscribe_thread(self, channel):
         pubsub = self.r_client.pubsub()
@@ -91,6 +109,9 @@ class PubSubRedis:
         print(f"Subscribed to channel {channel}")
         
         for msg in pubsub.listen():
+            if self.force_shutdown: 
+                break
+
             if msg['type'] == 'message':
                 # New data received, update it and set the event
                 self.data_subs = np.array(json.loads(msg["data"]))
@@ -112,4 +133,8 @@ class PubSubRedis:
     def wait_for_new_data(self): 
         ## Event handling: must be on the end of every loop
         self.new_data_event.wait()
+
+    def stop_subscribing(self): 
+        self.force_shutdown = True
+        self.subscriber_thread.join()
 

@@ -6,7 +6,7 @@ paths = [f"results/{file}" for file in files]
 variables = [
     ["t", "dt", "x1", "x2", "x3", "x4"], 
     ["t", "dt", "xf1", "xf2", "xf3", "xf4"], 
-    ["t", "dt", "u1", "u2", "u3", "u4"]
+    ["t", "dt", "u1", "u2"]
 ]
 
 def plotter(x, names):
