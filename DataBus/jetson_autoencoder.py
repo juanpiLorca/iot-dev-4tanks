@@ -16,13 +16,14 @@ def write_data_file(data, csv_file, fieldnames):
         }
         csv_writer.writerow(info)
 
-def process_data(xf):
+def process_data(xf, t_delay):
     """
     Apply autoencoder or any other data processing logic here.
-    For now, we'll just simulate with a transformation.
+    For now, we'll just simulate with a buffer.
     """
     # Example transformation, replace with actual autoencoder logic
-    processed_xf = xf * 2
+    time.sleep(t_delay)
+    processed_xf = xf[:4]       # JUST RETURNING THE STATES!
     return processed_xf
 
 if __name__ == "__main__":
@@ -47,26 +48,29 @@ if __name__ == "__main__":
     ## Start the subscription (receiving data from plant_outputs)
     d_redis.start_subscribing(channel_sub)
 
-    t_delay = 0.5                   # [s]
-    xf = np.zeros(shape=(4,))
+    t_delay = 0.1                   # to simulate autoencoder processing time [s]
+    yf = np.zeros(shape=(4,))
     start_time = time.time()
     while True:
         current_time = time.time()
         # Get the latest data from the subscribed channel
-        x = d_redis.data_subs
+        y = d_redis.data_subs
 
         # Check if data is valid before processing
-        if x is not None and x.size > 0:
+        if y is not None and y.size > 0:
             # Process the data:
-            xf = process_data(x)
-            # Publish the processed data (delayed)
-            time.sleep(t_delay)
-            d_redis.publish_data(channel_pub, xf)
+            yf = process_data(y, t_delay)
+            ## Publishing
+            d_redis.publish_data(channel_pub, yf)
+            print('Published (Redis) to plant_outputs_filtered:')
+            print('(y_1, y_2, y_3, y_4) = ({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(yf[0], yf[1], yf[2], yf[3]))
+            print(30*'-')
 
         ## Event handling!
         d_redis.wait_for_new_data()
 
         elapsed_time = current_time - start_time
         dt = time.time() - current_time
-        data = [elapsed_time, dt, xf[0], xf[1], xf[2], xf[3]]
+        ## Store simulation time, delta time, and variables in data array
+        data = [elapsed_time, dt, yf[0], yf[1], yf[2], yf[3]]
         write_data_file(data, csv_path, fieldnames)

@@ -1,6 +1,4 @@
 import numpy as np
-from scipy.integrate import solve_ivp, odeint
-import numpy as np
 
 class NL_QuadrupleTank():
     def __init__(self, x0, Ts=0.1):

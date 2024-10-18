@@ -1,3 +1,2 @@
-plant_server_ip = "opc.tcp://127.0.0.1:4848"
-main_server_ip = "opc.tcp://192.168.0.141:4840"
-Ts_plant = 1
+PLANT_SERVER_IP = "opc.tcp://localhost:4848"
+Ts_PLANT = 1

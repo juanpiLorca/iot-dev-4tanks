@@ -1,10 +1,7 @@
 from opcua import Server
-import time, sys, os
-from datetime import datetime
-## Import from parent directory
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.append(parent_dir)
+import time
 from params import *
+
 class SubHandler(object):
 
     """
@@ -100,6 +97,6 @@ class OPC_server:
 
 if __name__ == '__main__':
     ## Start server
-    server = OPC_server(plant_server_ip)
+    server = OPC_server(PLANT_SERVER_IP)
     server.new_namespace(uri='QuadrupleTank', namespace=QuadrupleTaknks_Namespace, name='QuadrupleTank_namespace')
     server.start()

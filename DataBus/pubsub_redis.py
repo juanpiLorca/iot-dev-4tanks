@@ -99,7 +99,7 @@ class PubSubRedis:
                 self.new_data_event.set()
     
     def publish_data(self, channel, data):
-        print(f"Publishing processed data: {data}")
+        #print(f"Publishing processed data: {data}")
         self.r_client.publish(channel, json.dumps(data.tolist()))
         self.new_data_event.clear()
 
