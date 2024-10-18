@@ -1,7 +1,6 @@
 from threading import Thread, Event
 from time import sleep
 
-
 class UtilTimer(Thread):
     """Basic Timer for plant"""
     _id_counter = 1
@@ -24,18 +23,23 @@ class UtilTimer(Thread):
         return self.event.wait()
 
     def end_of_thread(self):
-        print(f"Timer {self.name} ended")
+        print(f"{self.name} ended")
 
     def run(self):
-        while not self.force_shutdown:
-            sleep(self.interval)
-            if self.force_shutdown:  
-                break
-            self.event.set()
-            self.end_of_thread()  
-            self.event.clear()
+        try:
+            while not self.force_shutdown:
+                sleep(self.interval)
+                if self.force_shutdown:  
+                    break
+                self.event.set()
+                # Here you can do your periodic task if needed
+                self.event.clear()
+        finally:
+            self.end_of_thread()  # This ensures it is called when the thread exits
+            self.stop()
 
     def stop(self):
         """Force the timer to stop."""
         self.force_shutdown = True
+        self.join()  # Wait for the thread to finish
 
