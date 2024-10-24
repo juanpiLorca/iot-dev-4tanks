@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   redis:
     image: redis:6.0.9
@@ -7,6 +9,62 @@ services:
       - redis-net
     ports:
       - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  client: 
+    image: plant_client
+    build: 
+      context: ./src/client
+      dockerfile: Dockerfile
+    container_name: plant-client
+    runtime: nvidia
+    environment: 
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/client:/workspace
+    network_mode: host
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  pytorch-app-autoencoder: 
+    image: autoencoder_filter
+    build: 
+      context: ./src/autoencoder
+      dockerfile: Dockerfile
+    container_name: autoencoder
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/autoencoder:/workspace
+    network_mode: host
+    env_file:
+      - .env
+    depends_on:
+      - client
+
+  controller: 
+    image: plant_controller
+    build: 
+      context: ./src/controller
+      dockerfile: Dockerfile
+    container_name: plant-controller
+    runtime: nvidia
+    environment: 
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/controller:/workspace
+    network_mode: host
+    env_file:
+      - .env
+    depends_on:
+      - pytorch-app-autoencoder
 
 networks:
   redis-net:

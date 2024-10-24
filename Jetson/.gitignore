@@ -1,1 +1,4 @@
 ./__pycache__
+src/autoencoder/Tanks_Data/No_Noised_Inputs/data_dict_processor_2.pkl
+.env
+results/

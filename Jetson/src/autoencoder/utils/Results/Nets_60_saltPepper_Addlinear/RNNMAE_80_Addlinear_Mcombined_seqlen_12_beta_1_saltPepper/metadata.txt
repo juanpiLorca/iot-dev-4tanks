@@ -1,0 +1,17 @@
+n_inputs: 6 
+hidden_size: 20 
+n_layers: 2 
+bidirectional: False 
+seqlen: 12 
+tau: 1 
+mode: combined 
+noise_power: 0.5 
+noise_inputs: False 
+batch_size: 64 
+name: RNNMAE_80_Addlinear_Mcombined_seqlen_12_beta_1_saltPepper 
+missing: True 
+data_type: Tanks 
+criterion: MAE 
+missing_prob: 0.2 
+beta: 1 
+additional_info: En este caso no se hace la suma de para bypasear a la cnn 

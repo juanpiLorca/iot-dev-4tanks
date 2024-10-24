@@ -1,10 +1,10 @@
 FROM python:3.9.2
 
 # Changing working directory, also creating folder
-WORKDIR /workspace_pl
+WORKDIR /workspace
 
 # Copy the rest of the code
-COPY . /workspace_pl
+COPY . /workspace
 
 # Upgrade pip and install dependencies
 RUN pip install --upgrade pip && \
