@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from utils.nets import RNNAutoencoder_AddLayer
 from utils.data_processor import DataProcessor, generate_noise
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import root_mean_squared_error
+from sklearn.metrics import mean_squared_error
 from utils.random_addlinear_noise import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -314,5 +314,5 @@ if __name__ == '__main__':
     ## RMSE
     buff = int(meta['seqlen'] * 1.5)
     print(Y_pred_array[buff:upto, 2:].shape, clean_data[buff:upto, 2:].shape)
-    rmse_pred_clean = root_mean_squared_error(Y_pred_array[buff:upto, 2:], clean_data[buff:upto, 2:])
+    rmse_pred_clean = np.sqrt(mean_squared_error(Y_pred_array[buff:upto, 2:], clean_data[buff:upto, 2:]))
     print(f'RMSE to clean states = {rmse_pred_clean:.3f}')

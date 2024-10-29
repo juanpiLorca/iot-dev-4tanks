@@ -19,19 +19,10 @@ def write_data_file(data, csv_file, fieldnames):
         }
         csv_writer.writerow(info)
 
-# def process_data(xf, t_delay):
-#     """
-#     Apply autoencoder or any other data processing logic here.
-#     For now, we'll just simulate with a buffer.
-#     """
-#     # Example transformation, replace with actual autoencoder logic
-#     time.sleep(t_delay)
-#     processed_xf = xf[:4]       # JUST RETURNING THE STATES!
-#     return processed_xf
+
 def process_data(AE, x, u, scaler):
     """
     Apply autoencoder or any other data processing logic here.
-    For now, we'll just simulate with a transformation.
     """
     ## Noise x (the function recieves a numpy array, a conversion from list to np.array has to be done and later reversed)
     x_np = np.array(x).reshape(1,4)
@@ -114,6 +105,11 @@ if __name__ == "__main__":
             plant_redis = d_redis.data_subs
             x = plant_redis[:4]
             u = plant_redis[4:]
+
+            ## Stop the simulation
+            if (x[0], x[1], x[2], x[3], u[0], u[1]) == (1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0): 
+                break
+
             # Check if data is valid before processing
             if x is not None and u is not None and x.size > 0 and u.size > 0:
                 # Process the data:

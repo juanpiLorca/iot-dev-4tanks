@@ -79,6 +79,12 @@ if __name__ == "__main__":
 
             # Get the latest data from the subscribed channel 
             u = d_redis.data_subs 
+
+            ## ## Stop the simulation: flag to autoencoder
+            if (u[0], u[1]) == (1000.0, 1000.0): 
+                y_flag = 1000.0*np.ones(6)
+                d_redis.publish_data(channel_pub, y_flag)
+                break
             
             # Check if data is valid before processing 
             if u is not None and u.size > 0: 

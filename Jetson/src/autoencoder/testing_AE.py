@@ -12,7 +12,7 @@ import torch.optim as optim
 import numpy as np
 from sklearn.decomposition import PCA
 from torch.optim.lr_scheduler import LambdaLR
-from sklearn.metrics import root_mean_squared_error
+from sklearn.metrics import mean_squared_error
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import PCA
 
@@ -128,12 +128,12 @@ class TestingAutoencoder():
             pca = PCA(n_components=i)
             pca.fit(h)
             h_pca = pca.inverse_transform(pca.transform(h))
-            pca_errors.append(root_mean_squared_error(h_pca, h))
+            pca_errors.append(np.sqrt(mean_squared_error(h_pca, h)))
 
             pca_add = PCA(n_components=i)
             pca_add.fit(h_add)
             h_pca_add = pca_add.inverse_transform(pca_add.transform(h_add))
-            pca_add_errors.append(root_mean_squared_error(h_pca_add, h_add))
+            pca_add_errors.append(np.sqrt(mean_squared_error(h_pca_add, h_add)))
         self.h_statistics['pca_error'].append(pca_errors)
         self.h_statistics['pca_error_add'].append(pca_add_errors)
 
@@ -264,14 +264,14 @@ class TestingAutoencoder():
         plt.show()
 
         # Performances calculation
-        total_rmse = root_mean_squared_error(Y_pred_list[:, 2:], X_clean_list[:, 2:])
-        lost_index_rmse = root_mean_squared_error(Y_pred_list[:, missing_index], X_clean_list[:, missing_index])
+        total_rmse = np.sqrt(mean_squared_error(Y_pred_list[:, 2:], X_clean_list[:, 2:]))
+        lost_index_rmse = np.sqrt(mean_squared_error(Y_pred_list[:, missing_index], X_clean_list[:, missing_index]))
 
         print('Total RMSE: {}'.format(total_rmse))
         # print('Lost index RMSE: {}'.format(lost_index_rmse))
 
-        total_rmse_no_missing = root_mean_squared_error(Y_pred_no_missing_list[:, 2:], X_clean_list[:, 2:])
-        lost_index_rmse_no_missing = root_mean_squared_error(Y_pred_no_missing_list[:, missing_index], X_clean_list[:, missing_index])
+        total_rmse_no_missing = np.sqrt(mean_squared_error(Y_pred_no_missing_list[:, 2:], X_clean_list[:, 2:]))
+        lost_index_rmse_no_missing = np.sqrt(mean_squared_error(Y_pred_no_missing_list[:, missing_index], X_clean_list[:, missing_index]))
         # print('Total RMSE no missing: {}'.format(total_rmse_no_missing))
         # print('Lost index RMSE no missing: {}'.format(lost_index_rmse_no_missing))
 

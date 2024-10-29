@@ -49,7 +49,8 @@ def write_data_file(data, csv_file, fieldnames):
             "t": data[0],
             "dt": data[1], 
             "u1": data[2], 
-            "u2": data[3]
+            "u2": data[3], 
+            "ref": data[4]
         }
         csv_writer.writerow(info)
         
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     controller = Controller(TS_PLANT)
 
     csv_path = "../../results/controller.csv"
-    fieldnames = ["t", "dt", "u1", "u2"]
+    fieldnames = ["t", "dt", "u1", "u2", "ref"]
     with open(csv_path, "w") as file: 
         csv_writer = csv.DictWriter(file, fieldnames=fieldnames)
         csv_writer.writeheader()
@@ -115,6 +116,9 @@ if __name__ == "__main__":
                 if cnt == int(9*sim_points/10): ref = 30 * np.ones(4)
                 if cnt >= sim_points:
                     cnt = 0
+                    ## Stop the simulation: flag to client
+                    d_redis.publish_data(channel_pub, 1000.0*np.ones_like(u))
+                    break
                 else:
                     cnt += 1
 
@@ -124,7 +128,7 @@ if __name__ == "__main__":
             elpased_time = current_time - start_time
             dt = time.time() - current_time
             ## Store simulation time, delta time, and variables in data array
-            data = [elpased_time, dt, u[0], u[1]]
+            data = [elpased_time, dt, u[0], u[1], ref[0]]
             write_data_file(data, csv_path, fieldnames)
     finally: 
         d_redis.stop_subscribing()

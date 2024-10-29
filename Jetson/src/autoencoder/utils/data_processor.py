@@ -7,7 +7,7 @@ import numpy as np
 import colorednoise as cn
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler, RobustScaler
-from sklearn.metrics import root_mean_squared_error
+from sklearn.metrics import mean_squared_error
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -403,6 +403,6 @@ if __name__ == '__main__':
         scaler_preproc = data_tanks['scaler_preproc']
         test_data = scaler.inverse_transform(data_tanks['test_data'][:, -1, :].numpy())[:, 2:]
         test_data_preproc = scaler_preproc.inverse_transform(data_tanks['test_data_preproc'][:, -1, :].numpy())[:, 2:]
-        rmse = root_mean_squared_error(test_data, test_data_preproc)
+        rmse = np.sqrt(mean_squared_error(test_data, test_data_preproc))
 
         print('Noise Power: {} | RMSE: {}'.format(noise_power, rmse))

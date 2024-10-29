@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt 
 import pandas as pd
 
+
 files = ["plant_client.csv", "autoencoder.csv", "controller.csv"]
 paths = [f"results/{file}" for file in files]
 variables = [
@@ -9,41 +10,42 @@ variables = [
     ["t", "dt", "u1", "u2"]
 ]
 
-def plotter(x, names):
-    t = x[0]
-    dt = x[1]
-    nrows = len(x)
-    colors = ["b", "r", "g", "c"]
-    fig, ax = plt.subplots(nrows=(nrows-2))
-    num = 0
-    for j in range(2, nrows):  
-        ax[j-2].clear()
-        ax[j-2].plot(t, x[j], label=names[j], color=colors[num])
-        ax[j-2].set_xlabel('Time [s]')
-        ax[j-2].set_ylabel('Magnitude')
-        ax[j-2].grid()
-        ax[j-2].legend(loc='upper right', bbox_to_anchor=(1.2, 1)) 
-        num += 1
-    fig.tight_layout()  
-    plt.subplots_adjust(hspace=0.7)  
-    return fig, ax
 
-def plot_results(data, variables): 
-    for x, names in zip(data, variables): 
-        _, _ = plotter(x, names)
-    plt.tight_layout()
-    plt.show()
-
-
-if __name__ == "__main__": 
-    data_client_plant = pd.read_csv(paths[0])
-    data_autoencoder = pd.read_csv(paths[1])
-    data_controller = pd.read_csv(paths[2])
-    data = [
-        [data_client_plant[name_var] for name_var in variables[0]],
-        [data_autoencoder[name_var] for name_var in variables[1]],
-        [data_controller[name_var] for name_var in variables[2]]
-    ]
-    plot_results(data, variables)
-
+data_client_plant = pd.read_csv(paths[0])
+data_autoencoder = pd.read_csv(paths[1])
+data_controller = pd.read_csv(paths[2])
+data = [
+    [data_client_plant[name_var] for name_var in variables[0]],
+    [data_autoencoder[name_var] for name_var in variables[1]],
+    [data_controller[name_var] for name_var in variables[2]]
+]
  
+t = data_client_plant["t"]
+fig, axs = plt.subplots(2, 2, figsize=(10, 10))
+axs[0,0].plot(t, data_client_plant["x1"], label=r"$x_1$")
+axs[0,0].plot(t, data_autoencoder["xf1"], label=r"$\hat{x}_1$")
+axs[0,0].plot(t, data_controller["ref"], linestyle="--", label=r"$x_{1,ref}$")
+axs[0,0].set_xlabel("Time [s]")
+axs[0,0].set_ylabel(r"$x_1(t)$")
+axs[0,0].legend()
+axs[0,0].grid()
+axs[0,1].plot(t, data_client_plant["x2"], label=r"$x_2$")
+axs[0,1].plot(t, data_autoencoder["xf2"], label=r"$\hat{x}_2$")
+axs[0,1].plot(t, data_controller["ref"], linestyle="--", label=r"$x_{2,ref}$")
+axs[0,1].set_xlabel("Time [s]")
+axs[0,1].set_ylabel(r"$x_2(t)$")
+axs[0,1].legend()
+axs[0,1].grid()
+axs[1,0].plot(t, data_client_plant["x3"], label=r"$x_3$")
+axs[1,0].set_xlabel("Time [s]")
+axs[1,0].set_ylabel(r"$x_3(t)$")
+axs[1,0].legend()
+axs[1,0].grid()
+axs[1,1].plot(t, data_client_plant["x4"], label=r"$x_4$")
+axs[1,1].set_xlabel("Time [s]")
+axs[1,1].set_ylabel(r"$x_4(t)$")
+axs[1,1].legend()
+axs[1,1].grid()
+plt.tight_layout()
+plt.savefig("local_results.jpg", format="jpg")
+plt.show()
