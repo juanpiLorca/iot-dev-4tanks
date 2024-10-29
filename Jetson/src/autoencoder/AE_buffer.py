@@ -290,16 +290,6 @@ if __name__ == '__main__':
     test_data = torch.from_numpy(np_test_data)
     print(test_data.shape)
 
-    # idx_fig1 = 2
-    # plt.figure(1)
-    # plt.plot(test_data[:upto, idx_fig1], label='Y_noisy')
-    # plt.title('Y_pred_array')
-    # plt.plot(Y_pred_array[:, idx_fig1], label='Y_AE')
-    # plt.title(f'AE Buffer (idx {idx_fig1})')
-    # plt.plot(clean_data[:upto, idx_fig1], label='Y_clean')
-    # plt.legend(loc='upper right')
-    # plt.show()
-
     for i in range(1,5):        
         plt.figure(2)
         plt.subplot(int(f'22{i}'))
