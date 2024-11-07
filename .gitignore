@@ -4,3 +4,7 @@
 # Ignore other common Python files
 __pycache__/
 *.pyc
+
+# Ignore simulation results folder
+JResults/
+Test/

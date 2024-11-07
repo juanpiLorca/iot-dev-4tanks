@@ -1,5 +1,4 @@
 from opcua import Client
-import time
 import numpy as np
 from NL_QuadrupleTank import NL_QuadrupleTank
 from params import *
@@ -8,7 +7,7 @@ from util import *
 if __name__ == '__main__':
     ## Instanciate Plant
     x0=[12.4, 12.7, 1.8, 1.4]
-    plant = NL_QuadrupleTank(x0=x0, Ts=Ts_PLANT)
+    plant = NL_QuadrupleTank(x0=x0, Ts=TS_PLANT)
 
     ## Create a client instance and connect to the server
     client = Client(PLANT_SERVER_IP) 
@@ -31,7 +30,7 @@ if __name__ == '__main__':
     y_4_node = outputs_folder.get_child(['2:y_4'])
 
     ## Plant sample time: 
-    plant_timer = UtilTimer(Ts_PLANT, "Sampling Plant Timer")
+    plant_timer = UtilTimer(TS_PLANT, "Sampling Plant Timer")
     plant_timer.start()
     
     try:      

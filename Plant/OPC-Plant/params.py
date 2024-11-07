@@ -1,0 +1,2 @@
+PLANT_SERVER_IP = "opc.tcp://192.168.0.141:4848"
+TS_PLANT = 1

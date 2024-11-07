@@ -1,5 +1,5 @@
 from opcua import Client
-import time, sys, os
+import sys, os
 import numpy as np
 from NL_QuadrupleTank import NL_QuadrupleTank
 from util import UtilTimer
