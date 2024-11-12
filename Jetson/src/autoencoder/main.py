@@ -35,7 +35,7 @@ def process_data(AE, x, u, scaler):
         x_noised = AE.noise_datapoint(x_np, multiplier_white=1, multiplier_SP=1)
         x_noised = x_noised[0].tolist()
     else: 
-        x_np = x
+        x_noised = x
     
     if USE_AUTOENCODER:
         # The point is concatenated to the input (not needed for buffer to work) and then reshaped
