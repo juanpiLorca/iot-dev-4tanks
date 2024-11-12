@@ -26,7 +26,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes: 
       - ./src/client:/workspace
-      - ../../results:/workspace/results   # Correct relative path
+      - ./results:/workspace/results   # Correct relative path
     network_mode: host
     env_file:
       - .env
@@ -44,7 +44,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes: 
       - ./src/autoencoder:/workspace
-      - ../../results:/workspace/results   # Correct relative path
+      - ./results:/workspace/results   # Correct relative path
     network_mode: host
     env_file:
       - .env
@@ -62,7 +62,7 @@ services:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes: 
       - ./src/controller:/workspace
-      - ../../results:/workspace/results   # Correct relative path
+      - ./results:/workspace/results   # Correct relative path
     network_mode: host
     env_file:
       - .env
