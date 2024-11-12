@@ -25,7 +25,7 @@ def write_data_file(data, csv_file, fieldnames):
 
 if __name__ == "__main__": 
 
-    csv_path = "../../results/plant_client.csv"
+    csv_path = "/workspace/results/plant_client.csv"
     fieldnames = ["t", "dt", "x1", "x2", "x3", "x4", "u1", "u2"]
     with open(csv_path, "w") as file: 
         csv_writer = csv.DictWriter(file, fieldnames=fieldnames)
