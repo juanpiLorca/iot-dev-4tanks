@@ -91,7 +91,8 @@ if __name__ == "__main__":
         port=6379, 
         driver_name="plant_client_driver"
     )
-
+    d_redis.data_subs = np.zeros(shape=(2,))        ## Initialize the data channel to be subscribed (u1, u2)
+    
     ## Define the channels for pub/sub
     channel_pub = "plant_outputs"
     channel_sub = "plant_inputs"

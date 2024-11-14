@@ -78,6 +78,7 @@ if __name__ == "__main__":
         port=6379,
         driver_name="autoencoder_driver"
     )
+    d_redis.data_subs = np.zeros(shape=(6,))        ## Initialize the data channel to be subscribed (x1, x2, x3, x4, u1, u2)
     
     ## Define the channels for pub/sub
     channel_pub = "plant_outputs_filtered"
@@ -85,6 +86,10 @@ if __name__ == "__main__":
 
     ## Start the subscription (receiving data from plant_outputs)
     d_redis.start_subscribing(channel_sub)
+    print(30*"-")
+    print(f"|| Using autoencoder: {USE_AUTOENCODER} ||")
+    print(f"|| Adding noise: {ADD_NOISE} ||")
+    print(30*"-")
 
     ## Initialize the autoencoder
     if USE_AUTOENCODER:
@@ -113,6 +118,7 @@ if __name__ == "__main__":
 
         AE = AutoEncoder()
     else: 
+        scaler = None
         AE = None
 
     try: 

@@ -72,7 +72,8 @@ if __name__ == "__main__":
         port=6379, 
         driver_name="controller_driver"
     )
-
+    d_redis.data_subs = np.zeros(shape=(4,))        ## Initialize the data channel to be subscribed (xf1, xf2, xf3, xf4)
+    
     ## Publishing & subscribing channels: 
     channel_sub = "plant_outputs_filtered"
     channel_pub = "plant_inputs"
