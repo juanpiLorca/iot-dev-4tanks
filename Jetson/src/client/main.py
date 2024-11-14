@@ -1,10 +1,32 @@
 import numpy as np
 import csv
 import time
+import threading
 from opcua import Client 
 from pubsub_redis import PubSubRedis
-from util import UtilTimer
 from params import *
+
+class SubHandler(object):
+    """Subscription Handler. Receives events from the server for a subscription"""
+
+    def __init__(self):
+        ## Dictionary to store lastets values of each node: {y1, y2, y3, y4}
+        self.latest_data = {}
+        self.data_lock = threading.Lock()
+        self.new_data_event = threading.Event()
+
+    def datachange_notification(self, node, val, data):
+        """Handles data changes and stores them in a thread-safe manner"""
+        node_id = node.nodeid.Identifier  # Using node ID as a key
+        with self.data_lock:
+            self.latest_data[node_id] = val
+        self.new_data_event.set()
+
+    def get_latest_value(self, node_id):
+        """Retrieve the latest value for a specific node in a thread-safe manner"""
+        with self.data_lock:
+            return self.latest_data.get(node_id)
+
 
 
 def write_data_file(data, csv_file, fieldnames): 
@@ -51,6 +73,19 @@ if __name__ == "__main__":
     y_3_node = outputs_folder.get_child(['2:y_3'])
     y_4_node = outputs_folder.get_child(['2:y_4'])
 
+    ## Handler for event handling: 
+    handler = SubHandler()
+    ## Still having the problem of not being able to sample the plant as plant sampling time
+    ## by event handling. ==> Check test_sampling_plant.py script to see that, even by forcing 
+    ##                        the plant to change by applying mv. the plant states change in the 
+    ##                        server by a really small amount that triggers the event handler in 
+    ##                        less than 1 second.
+    sub = client.create_subscription(int(TS_PLANT*1000), SubHandler())
+    y1_val = sub.subscribe_data_change(y_1_node)
+    y2_val = sub.subscribe_data_change(y_2_node)
+    y3_val = sub.subscribe_data_change(y_3_node)
+    y4_val = sub.subscribe_data_change(y_4_node)
+
     d_redis = PubSubRedis(
         host="localhost", 
         port=6379, 
@@ -63,10 +98,6 @@ if __name__ == "__main__":
 
     ## Start the subscription (receiving data from plant_inputs)
     d_redis.start_subscribing(channel_sub)
-
-    ## Plant sample time: 
-    plant_timer = UtilTimer(TS_PLANT, "Sampling Plant Timer")
-    plant_timer.start()
     
     try:   
         print("//---------------------- Initializing Communication ----------------------//")
@@ -75,12 +106,12 @@ if __name__ == "__main__":
         start_time = time.time()
         while True: 
             current_time = time.time()
-            plant_timer.wait()
+            handler.new_data_event.wait()   
 
             # Get the latest data from the subscribed channel 
             u = d_redis.data_subs 
 
-            ## ## Stop the simulation: flag to autoencoder
+            ## Stop the simulation: flag to autoencoder
             if (u[0], u[1]) == (1000.0, 1000.0): 
                 y_flag = 1000.0*np.ones(6)
                 d_redis.publish_data(channel_pub, y_flag)
@@ -97,10 +128,10 @@ if __name__ == "__main__":
 
                 # Get data from plant server 
                 y = np.array([
-                    y_1_node.get_value(), 
-                    y_2_node.get_value(), 
-                    y_3_node.get_value(), 
-                    y_4_node.get_value()
+                        handler.get_latest_value(y_1_node.nodeid.Identifier),
+                        handler.get_latest_value(y_2_node.nodeid.Identifier),
+                        handler.get_latest_value(y_3_node.nodeid.Identifier),
+                        handler.get_latest_value(y_4_node.nodeid.Identifier)
                 ])
                 y_pub = np.concatenate([y, np.array([u[0], u[1]])])
                 ## Publishing
@@ -113,7 +144,7 @@ if __name__ == "__main__":
             write_data_file(data, csv_path, fieldnames)
     finally: 
         d_redis.stop_subscribing()
-        plant_timer.stop()
+        client.disconnect()
 
 
         

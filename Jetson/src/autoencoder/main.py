@@ -87,30 +87,33 @@ if __name__ == "__main__":
     d_redis.start_subscribing(channel_sub)
 
     ## Initialize the autoencoder
-    folder='NL_AE_models/'
-    noise='saltPepper'
-    name='uut_noise2'
-    meta = load_metadata('{}{}/'.format(folder, name))
-    processor = DataProcessor(seqlen=60)
+    if USE_AUTOENCODER:
+        folder='NL_AE_models/'
+        noise='saltPepper'
+        name='uut_noise2'
+        meta = load_metadata('{}{}/'.format(folder, name))
+        processor = DataProcessor(seqlen=60)
 
-    # data_dict2 no tiene shuffle
-    data_dict2 = processor.process_tanks(noise_power=meta['noise_power'], 
-                                         noise_inputs=meta['noise_inputs'], 
-                                         shuffle=False,
-                                         folder='Tanks_Data/No_Noised_Inputs/', 
-                                         type_of_noise=noise, clean_data='data_NL_clean.pkl')
-    test_data = data_dict2['test_data']
-    clean_data = data_dict2['test_data_preproc']
-    print(f"Test data shape: {test_data.shape}")
+        # data_dict2 no tiene shuffle
+        data_dict2 = processor.process_tanks(noise_power=meta['noise_power'], 
+                                            noise_inputs=meta['noise_inputs'], 
+                                            shuffle=False,
+                                            folder='Tanks_Data/No_Noised_Inputs/', 
+                                            type_of_noise=noise, clean_data='data_NL_clean.pkl')
+        test_data = data_dict2['test_data']
+        clean_data = data_dict2['test_data_preproc']
+        print(f"Test data shape: {test_data.shape}")
 
-    scaler = data_dict2['scaler']
-    scaler_preproc = data_dict2['scaler_preproc']
-    np_clean_data = clean_data.numpy()
-    np_clean_data = scaler_preproc.inverse_transform(np_clean_data[:, 0, :])
-    clean_data = torch.from_numpy(np_clean_data)
-    print(f"Clean data shape: {clean_data.shape}")
+        scaler = data_dict2['scaler']
+        scaler_preproc = data_dict2['scaler_preproc']
+        np_clean_data = clean_data.numpy()
+        np_clean_data = scaler_preproc.inverse_transform(np_clean_data[:, 0, :])
+        clean_data = torch.from_numpy(np_clean_data)
+        print(f"Clean data shape: {clean_data.shape}")
 
-    AE = AutoEncoder()
+        AE = AutoEncoder()
+    else: 
+        AE = None
 
     try: 
         print("//---------------------- Initializing Communication ----------------------//")
