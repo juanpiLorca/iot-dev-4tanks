@@ -55,7 +55,7 @@ if __name__ == "__main__":
     y_3_node = outputs_folder.get_child(['2:y_3'])
     y_4_node = outputs_folder.get_child(['2:y_4'])
 
-    sub = client.create_subscription(checking_time, handler)
+    sub = client.create_subscription(checking_time, handler)            
     y1_val = sub.subscribe_data_change(y_1_node)
     y2_val = sub.subscribe_data_change(y_2_node)
     y3_val = sub.subscribe_data_change(y_3_node)
