@@ -3,6 +3,7 @@ import time
 import numpy as np
 from pubsub_redis import PubSubRedis 
 from AE_buffer import *
+from lowpass_filter import *
 from params import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,7 +26,7 @@ def write_data_file(data, csv_file, fieldnames):
         csv_writer.writerow(info)
 
 
-def process_data(AE, x, u, scaler):
+def process_data(AE, LPF, x, u, scaler):
     """
     Apply autoencoder or any other data processing logic here.
     """
@@ -52,8 +53,11 @@ def process_data(AE, x, u, scaler):
         Y_pred_list = scaler.inverse_transform(Y_pred_unscaled)
         # Select the last element of the buffer (tensor), not regarding the inputs (first two elements) and reshaping
         x_pred = Y_pred_list[-1][2:].reshape(4,)
+    elif USE_LPF:
+        x_pred = LPF.update(x_noised)
     else: 
         x_pred = x
+
     return x_noised, x_pred
 
 
@@ -78,7 +82,8 @@ if __name__ == "__main__":
         port=6379,
         driver_name="autoencoder_driver"
     )
-    d_redis.data_subs = np.zeros(shape=(6,))        ## Initialize the data channel to be subscribed (x1, x2, x3, x4, u1, u2)
+    ## Initialize the data channel to be subscribed (x1, x2, x3, x4, u1, u2)
+    d_redis.data_subs = np.zeros(shape=(6,))       
     
     ## Define the channels for pub/sub
     channel_pub = "plant_outputs_filtered"
@@ -87,12 +92,16 @@ if __name__ == "__main__":
     ## Start the subscription (receiving data from plant_outputs)
     d_redis.start_subscribing(channel_sub)
     print(30*"-")
-    print(f"|| Using autoencoder: {USE_AUTOENCODER} ||")
     print(f"|| Adding noise: {ADD_NOISE} ||")
+    print(f"|| Using autoencoder: {USE_AUTOENCODER} ||")
+    print(f"|| Using low-pass filter: {USE_LPF} ||")   
     print(30*"-")
 
-    ## Initialize the autoencoder
+    AE = None
+    scaler = None
+    LPF = None
     if USE_AUTOENCODER:
+        ## Initialize the autoencoder
         folder='NL_AE_models/'
         noise='saltPepper'
         name='uut_noise2'
@@ -117,9 +126,19 @@ if __name__ == "__main__":
         print(f"Clean data shape: {clean_data.shape}")
 
         AE = AutoEncoder()
-    else: 
-        scaler = None
-        AE = None
+
+    elif USE_LPF:
+        ## Low-pass filter
+        cutoff_frequency = 1e-2             # Cutoff frequency (Hz)
+        sampling_frequency = 1.0            # Sampling frequency (Hz)
+        order = 1                           # Filter order
+        window_size = 60
+        LPF = LowPassFilter(
+            cutoff=cutoff_frequency, 
+            fs=sampling_frequency, 
+            order=order, 
+            window_size=window_size
+        )
 
     try: 
         print("//---------------------- Initializing Communication ----------------------//")
@@ -139,7 +158,7 @@ if __name__ == "__main__":
             # Check if data is valid before processing
             if x is not None and u is not None and x.size > 0 and u.size > 0:
                 # Process the data:
-                xn, xf = process_data(AE, x, u, scaler)
+                xn, xf = process_data(AE, LPF, x, u, scaler)
                 ## Publishing
                 d_redis.publish_data(channel_pub, xf)
                 print('Published (Redis) to plant_outputs_filtered:')
