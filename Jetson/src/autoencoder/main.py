@@ -35,8 +35,10 @@ def process_data(AE, LPF, x, u, scaler):
         x_np = np.array(x).reshape(1,4)
         x_noised = AE.noise_datapoint(x_np, multiplier_white=1, multiplier_SP=1)
         x_noised = x_noised[0].tolist()
+        x_pred = x_noised
     else: 
         x_noised = x
+        x_pred = x
     
     if USE_AUTOENCODER:
         # The point is concatenated to the input (not needed for buffer to work) and then reshaped
@@ -55,8 +57,6 @@ def process_data(AE, LPF, x, u, scaler):
         x_pred = Y_pred_list[-1][2:].reshape(4,)
     elif USE_LPF:
         x_pred = LPF.update(x_noised)
-    else: 
-        x_pred = x
 
     return x_noised, x_pred
 
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     print(f"|| Using low-pass filter: {USE_LPF} ||")   
     print(30*"-")
 
-    AE = None
+    AE = AutoEncoder()
     scaler = None
     LPF = None
     if USE_AUTOENCODER:
@@ -124,8 +124,6 @@ if __name__ == "__main__":
         np_clean_data = scaler_preproc.inverse_transform(np_clean_data[:, 0, :])
         clean_data = torch.from_numpy(np_clean_data)
         print(f"Clean data shape: {clean_data.shape}")
-
-        AE = AutoEncoder()
 
     elif USE_LPF:
         ## Low-pass filter

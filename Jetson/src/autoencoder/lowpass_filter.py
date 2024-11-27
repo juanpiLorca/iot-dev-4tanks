@@ -1,3 +1,4 @@
+import numpy as np
 from scipy.signal import butter, lfilter
 from collections import deque
 
