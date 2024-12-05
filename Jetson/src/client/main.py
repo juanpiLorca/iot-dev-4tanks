@@ -138,6 +138,7 @@ if __name__ == "__main__":
                 ## Publishing
                 d_redis.publish_data(channel_pub, y_pub)
 
+            handler.new_data_event.clear()
             elapsed_time = current_time - start_time
             dt = time.time() - current_time
             ## Store simulation time, delta time, and variables in data array
