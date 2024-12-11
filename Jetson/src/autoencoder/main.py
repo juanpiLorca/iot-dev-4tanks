@@ -64,7 +64,7 @@ def process_data(AE, LPF, x, u, scaler):
 
 if __name__ == "__main__":
 
-    csv_path = "../results/autoencoder.csv"
+    csv_path = "/results/autoencoder.csv"
     fieldnames = [
         "t", "dt", 
         "xn1", "xn2", 

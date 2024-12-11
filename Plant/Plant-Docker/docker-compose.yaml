@@ -11,7 +11,7 @@ services:
     environment: 
       - NVIDIA_VISIBLE_DEVICES=all
     volumes: 
-      - ./src/opc_server:/workspace_sv
+      - ./src/opc_server:/workspace
     network_mode: host
     restart: unless-stopped
     env_file: 
@@ -26,7 +26,8 @@ services:
     environment: 
       - NVIDIA_VISIBLE_DEVICES=all
     volumes: 
-      - ./src/plant:/workspace_pl
+      - ./src/plant:/workspace
+      - ./data:/data
     network_mode: host
     env_file: 
       - .env
@@ -34,6 +35,6 @@ services:
       - opc_server
     command: |
       /bin/bash -c "
-        sleep 10 && python3 main.py
+        sleep 15 && python3 main.py
       "
 

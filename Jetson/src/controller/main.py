@@ -61,7 +61,7 @@ if __name__ == "__main__":
     ## Instanciate Controller:
     controller = Controller(TS_PLANT)
 
-    csv_path = "/workspace/results/controller.csv"
+    csv_path = "/results/controller.csv"
     fieldnames = ["t", "dt", "u1", "u2", "ref"]
     with open(csv_path, "w") as file: 
         csv_writer = csv.DictWriter(file, fieldnames=fieldnames)

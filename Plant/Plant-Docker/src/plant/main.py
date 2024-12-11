@@ -28,16 +28,16 @@ class SubHandler(object):
             df = pd.DataFrame({
                 "incoming_timestamp": [self.incoming_timestamp]
             })
-            df.to_csv(r'../data/incomming_timestamps.csv', mode="a", index=False, header=False)
+            df.to_csv(r'/data/incomming_timestamps.csv', mode="a", index=False, header=False)
 
 
 
 if __name__ == '__main__':
     # CSV info
     df = pd.DataFrame(columns=["incoming_timestamp"])
-    df.to_csv(r'../data/incomming_timestamps.csv', index=False)
+    df.to_csv(r'/data/incomming_timestamps.csv', index=False)
     df = pd.DataFrame(columns=["outgoing_timestamp"])
-    df.to_csv(r'../data/outgoing_timestamps.csv', index=False)
+    df.to_csv(r'/data/outgoing_timestamps.csv', index=False)
 
     ## Instanciate Plant
     x0=[12.4, 12.7, 1.8, 1.4]
@@ -97,7 +97,7 @@ if __name__ == '__main__':
         df = pd.DataFrame({
             "outgoing_timestamp": [outgoing_timestamp]
         })
-        df.to_csv(r'../data/outgoing_timestamps.csv', mode="a", index=False, header=False)
+        df.to_csv(r'/data/outgoing_timestamps.csv', mode="a", index=False, header=False)
         print('(y_1, y_2, y_3, y_4) = ({:.2f}, {:.2f}, {:.2f}, {:.2f})'.format(plant.x[0], plant.x[1], plant.x[2], plant.x[3]))
         print('(u_1, u_2) = ({:.2f}, {:.2f})'.format(u[0], u[1]))
         print(30*'-')
