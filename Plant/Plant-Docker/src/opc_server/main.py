@@ -1,11 +1,12 @@
 from opcua import Server
 import time, sys, os
+
 ## Import from parent directory
 parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_dir)
 from params import *
-class SubHandler(object):
 
+class SubHandler(object):
     """
     Subscription Handler. To receive events from server for a subscription
     """
@@ -38,18 +39,22 @@ class QuadrupleTanks_Namespace:
         ## Inputs
         u_1 = inputs.add_variable(self.idx, 'u_1', 0.4)
         u_2 = inputs.add_variable(self.idx, 'u_2', 0.3)
+        incomming_pkg = inputs.add_variable(self.idx, 'in_pkg', 0)
         u_1.set_writable()
         u_2.set_writable()
-
+        incomming_pkg.set_writable()
+        
         ## Outputs
         y_1 = outputs.add_variable(self.idx, 'y_1', 0)
         y_2 = outputs.add_variable(self.idx, 'y_2', 0)
         y_3 = outputs.add_variable(self.idx, 'y_3', 0)
         y_4 = outputs.add_variable(self.idx, 'y_4', 0)
+        outgoing_pkg = outputs.add_variable(self.idx, 'out_pkg', 0)
         y_1.set_writable()
         y_2.set_writable()
         y_3.set_writable()
         y_4.set_writable()
+        outgoing_pkg.set_writable()
 
         ## Define atributes
         # self.perturbations = [dv_1]
