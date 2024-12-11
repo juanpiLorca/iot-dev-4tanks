@@ -10,7 +10,7 @@ class SubHandler(object):
     """Subscription Handler. Receives events from the server for a subscription"""
 
     def __init__(self):
-        ## Dictionary to store lastets values of each node: {y1, y2, y3, y4}
+        ## Dictionary to store lastets values of each node: {y1, y2, y3, y4, pkg}
         self.latest_data = {}
         self.data_lock = threading.Lock()
         self.new_data_event = threading.Event()
@@ -26,6 +26,11 @@ class SubHandler(object):
         """Retrieve the latest value for a specific node in a thread-safe manner"""
         with self.data_lock:
             return self.latest_data.get(node_id)
+
+    def get_all_latest_values(self):
+        """Retrieve all latest values in a thread-safe manner"""
+        with self.data_lock:
+            return self.latest_data.copy()
 
 
 
@@ -47,7 +52,7 @@ def write_data_file(data, csv_file, fieldnames):
 
 if __name__ == "__main__": 
 
-    csv_path = "/workspace/results/plant_client.csv"
+    csv_path = "../results/plant_client.csv"
     fieldnames = ["t", "dt", "x1", "x2", "x3", "x4", "u1", "u2"]
     with open(csv_path, "w") as file: 
         csv_writer = csv.DictWriter(file, fieldnames=fieldnames)
@@ -66,12 +71,16 @@ if __name__ == "__main__":
     outputs_folder = tanks.get_child(['2:Outputs'])
 
     ## Access the variables
+    ## Inputs 
     u_1_node = inputs_folder.get_child(['2:u_1'])
     u_2_node = inputs_folder.get_child(['2:u_2'])
+    in_pkg_node = inputs_folder.get_child(['2:in_pkg'])
+    ## Outputs
     y_1_node = outputs_folder.get_child(['2:y_1'])
     y_2_node = outputs_folder.get_child(['2:y_2'])
     y_3_node = outputs_folder.get_child(['2:y_3'])
     y_4_node = outputs_folder.get_child(['2:y_4'])
+    out_pkg_node = outputs_folder.get_child(['2:out_pkg'])
 
     ## Handler for event handling: 
     handler = SubHandler()
@@ -80,11 +89,8 @@ if __name__ == "__main__":
     ##                        the plant to change by applying mv. the plant states change in the 
     ##                        server by a really small amount that triggers the event handler in 
     ##                        less than 1 second.
-    sub = client.create_subscription(int(TS_PLANT*1000), SubHandler())
-    y1_val = sub.subscribe_data_change(y_1_node)
-    y2_val = sub.subscribe_data_change(y_2_node)
-    y3_val = sub.subscribe_data_change(y_3_node)
-    y4_val = sub.subscribe_data_change(y_4_node)
+    sub = client.create_subscription(int(TS_PLANT*1000), handler)
+    pkg_change = sub.subscribe_data_change(out_pkg_node)
 
     d_redis = PubSubRedis(
         host="localhost", 
@@ -99,11 +105,15 @@ if __name__ == "__main__":
 
     ## Start the subscription (receiving data from plant_inputs)
     d_redis.start_subscribing(channel_sub)
+    print(f"Subscribing to channel: {channel_sub}")
     
     try:   
         print("//---------------------- Initializing Communication ----------------------//")
-        u = np.array([0.40, 0.30])          # INITIAL CONDITION 
-        d_redis.data_subs = u
+
+        u = np.array([0.40, 0.30])          # INITIAL CONDITION: manipulated variable 
+        d_redis.data_subs = u               # Initialize the data channel to be subscribed (u1, u2)
+        pkg_timer = 0                       # Counter for simulation
+
         start_time = time.time()
         while True: 
             current_time = time.time()
@@ -124,21 +134,25 @@ if __name__ == "__main__":
                 # Publish manipulated variable to plant server
                 u_1_node.set_value(u[0])
                 u_2_node.set_value(u[1])
-                print('Published to plant: (u_1, u_2) = ({:.2f}, {:.2f})'.format(u[0], u[1]))
+                in_pkg_node.set_value(pkg_timer+1)
+                pkg_timer += 1
+                print('Published to plant: (u_1, u_2, inpkg) = ({:.2f}, {:.2f}, {:.2f})'.format(u[0], u[1], pkg_timer))
                 print(30*'-')
 
                 # Get data from plant server 
                 y = np.array([
-                        handler.get_latest_value(y_1_node.nodeid.Identifier),
-                        handler.get_latest_value(y_2_node.nodeid.Identifier),
-                        handler.get_latest_value(y_3_node.nodeid.Identifier),
-                        handler.get_latest_value(y_4_node.nodeid.Identifier)
+                        y_1_node.get_value(),
+                        y_2_node.get_value(),
+                        y_3_node.get_value(),
+                        y_4_node.get_value()
                 ])
                 y_pub = np.concatenate([y, np.array([u[0], u[1]])])
                 ## Publishing
                 d_redis.publish_data(channel_pub, y_pub)
 
+            ## Clear the event to wait for the next data change: timer in plant_client (Raspberry Pi)
             handler.new_data_event.clear()
+
             elapsed_time = current_time - start_time
             dt = time.time() - current_time
             ## Store simulation time, delta time, and variables in data array

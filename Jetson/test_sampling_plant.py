@@ -30,14 +30,15 @@ class SubHandler:
         with self.data_lock:
             return self.latest_data.copy()
 
+
 if __name__ == "__main__":
-    url = "opc.tcp://192.168.0.122:4848"
+    url = "opc.tcp://192.168.0.141:4848"
     client = Client(url)
     client.connect()
 
     handler = SubHandler()  
-    checking_time = 500 # ms
-    client.create_subscription(checking_time, handler)
+    checking_time = 1000 # ms
+    # client.create_subscription(checking_time, handler)
 
     ## Search for particular nodes
     root = client.get_root_node()
@@ -54,6 +55,8 @@ if __name__ == "__main__":
     y_2_node = outputs_folder.get_child(['2:y_2'])
     y_3_node = outputs_folder.get_child(['2:y_3'])
     y_4_node = outputs_folder.get_child(['2:y_4'])
+    ## Access counter: 
+    pkg_cntr_node = inputs_folder.get_child(['2:pkg_cntr'])
 
     sub = client.create_subscription(checking_time, handler)            
     y1_val = sub.subscribe_data_change(y_1_node)
@@ -62,11 +65,15 @@ if __name__ == "__main__":
     y4_val = sub.subscribe_data_change(y_4_node)
 
     try:
+        counter = 0
         while True:
             # Wait for new data to be available
             initial_time = time.time()
             handler.new_data_event.wait()
-            
+
+            # Update the package counter
+            pkg_cntr_node.set_value(counter)
+
             # Retrieve the latest values for each node
             y1 = handler.get_latest_value(y_1_node.nodeid.Identifier)
             y2 = handler.get_latest_value(y_2_node.nodeid.Identifier)
@@ -76,6 +83,7 @@ if __name__ == "__main__":
             
             # Clear the event to wait for the next data change
             handler.new_data_event.clear()
+            counter += 1
             final_time = time.time()
             print(f"Time elapsed: {final_time - initial_time} seconds")
     finally:

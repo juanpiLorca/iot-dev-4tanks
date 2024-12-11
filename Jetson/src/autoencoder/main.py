@@ -64,7 +64,7 @@ def process_data(AE, LPF, x, u, scaler):
 
 if __name__ == "__main__":
 
-    csv_path = "/workspace/results/autoencoder.csv"
+    csv_path = "../results/autoencoder.csv"
     fieldnames = [
         "t", "dt", 
         "xn1", "xn2", 
@@ -97,9 +97,22 @@ if __name__ == "__main__":
     print(f"|| Using low-pass filter: {USE_LPF} ||")   
     print(30*"-")
 
+    ## Autoencoder initialization
     AE = AutoEncoder()
     scaler = None
-    LPF = None
+
+    ## Low Pass Filter initialization
+    cutoff_frequency = 1e-2             # Cutoff frequency (Hz)
+    sampling_frequency = 1.0            # Sampling frequency (Hz)
+    order = 1                           # Filter order
+    window_size = 60
+    LPF = LowPassFilter(
+        cutoff=cutoff_frequency, 
+        fs=sampling_frequency, 
+        order=order, 
+        window_size=window_size
+    )
+
     if USE_AUTOENCODER:
         ## Initialize the autoencoder
         folder='NL_AE_models/'
@@ -124,19 +137,6 @@ if __name__ == "__main__":
         np_clean_data = scaler_preproc.inverse_transform(np_clean_data[:, 0, :])
         clean_data = torch.from_numpy(np_clean_data)
         print(f"Clean data shape: {clean_data.shape}")
-
-    elif USE_LPF:
-        ## Low-pass filter
-        cutoff_frequency = 1e-2             # Cutoff frequency (Hz)
-        sampling_frequency = 1.0            # Sampling frequency (Hz)
-        order = 1                           # Filter order
-        window_size = 60
-        LPF = LowPassFilter(
-            cutoff=cutoff_frequency, 
-            fs=sampling_frequency, 
-            order=order, 
-            window_size=window_size
-        )
 
     try: 
         print("//---------------------- Initializing Communication ----------------------//")

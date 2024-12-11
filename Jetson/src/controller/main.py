@@ -83,10 +83,12 @@ if __name__ == "__main__":
 
     try: 
         print("//---------------------- Initializing Communication ----------------------//")
-        cnt = 0
-        sim_points = 20000
+
+        cnt = 0                             # Counter for simulation
+        sim_points = 20000                  # Number of simulation points
         ref = 15 * np.ones(4)               # init reference 4-Tanks plant
-        u = np.zeros(shape=(2,))
+        u = np.zeros(shape=(2,))            # init manipulated variable
+
         start_time = time.time()
         while True:
             current_time = time.time()
@@ -115,10 +117,11 @@ if __name__ == "__main__":
                 if cnt == int(7*sim_points/10): ref = 25 * np.ones(4)
                 if cnt == int(8*sim_points/10): ref = 15 * np.ones(4)
                 if cnt == int(9*sim_points/10): ref = 30 * np.ones(4)
+                ## Stop the simulation after sim_points
                 if cnt >= sim_points:
-                    cnt = 0
                     ## Stop the simulation: flag to client
                     d_redis.publish_data(channel_pub, 1000.0*np.ones_like(u))
+                    cnt = 0
                     break
                 else:
                     cnt += 1
