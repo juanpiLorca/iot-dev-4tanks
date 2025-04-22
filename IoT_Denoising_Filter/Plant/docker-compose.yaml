@@ -1,0 +1,33 @@
+services:
+
+  opc_server: 
+    image: plant_opcua_server
+    build: 
+      context: ./src/opc_server
+      dockerfile: Dockerfile 
+    container_name: plant-opc-server
+    environment: 
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/opc_server:/workspace
+    network_mode: host
+    restart: unless-stopped
+    env_file: 
+      - .env
+
+  4-tanks:
+    image: plant_opcua_client
+    build:
+      context: ./src/opc_plant  
+      dockerfile: Dockerfile         
+    container_name: plant-opc-client
+    environment: 
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes: 
+      - ./src/opc_plant:/workspace
+    network_mode: host
+    env_file: 
+      - .env
+    depends_on:
+      - opc_server
+

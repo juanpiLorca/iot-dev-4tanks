@@ -52,23 +52,15 @@ class NL_QuadrupleTank():
             elif self.u[i] < -1:
                 self.u[i] = -1
 
-    ## Update state using A - BK dynamic
     def step(self, u):
         ## Input update
         self.u = u
-        
         ## Time
         t = np.linspace(0, self.Ts, 2)
-
-        ## "Real time" update
-        # x = odeint(self.xd_func, self.x, t)  # Perform integration using Fortran's LSODA (Adams & BDF methods)
-        # self.x = [x[-1, 0], x[-1,1], x[-1, 2], x[-1, 3]]
-
         ## "Discrete" update
         self.x = [x + self.Ts * y for x, y in zip(self.x, self.xd_func(self.u, self.x, t))]
         self.Limites()
-
-        # Increment time
+        ## Increment time
         self.current_time += self.Ts
 
     
